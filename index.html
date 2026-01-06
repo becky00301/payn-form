@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>문의 및 예약</title>
+    <style>
+        :root {
+            --primary: #5b7fff;
+            --bg: #ffffff;
+            --text: #111111;
+            --subtitle: #666666;
+            --border: #e0e0e0;
+            --disabled: #cccccc;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f6f7fb;
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 820px;
+            margin: 40px auto;
+            padding: 0 20px 80px;
+        }
+
+        .card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 24px;
+            letter-spacing: -0.01em;
+        }
+
+        .subtitle {
+            margin: 0 0 24px;
+            color: var(--subtitle);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .field {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            min-width: 110px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .field .required {
+            color: #ff5555;
+            margin-left: 4px;
+        }
+
+        input,
+        select,
+        button {
+            font-size: 15px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #fff;
+            outline: none;
+        }
+
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .select-wrapper svg {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .consents {
+            margin-top: 8px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            background: #fafafa;
+        }
+
+        .consent-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .consent-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .consent-label {
+            width: 60px;
+            color: #777;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .consent-body {
+            flex: 1;
+            color: #777;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .consent-select {
+            width: 110px;
+        }
+
+        .actions {
+            margin-top: 26px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            background: var(--primary);
+            box-shadow: 0 8px 20px rgba(91, 127, 255, 0.35);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 4px 10px rgba(91, 127, 255, 0.25);
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            background: var(--disabled);
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        .summary {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            background: #f8f9fb;
+            border-radius: 10px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 20;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 460px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .modal-header {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toggle {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            background: #f5f5f7;
+            border-radius: 12px;
+            padding: 4px;
+            position: relative;
+        }
+
+        .toggle button {
+            border: none;
+            background: transparent;
+            padding: 14px 12px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #444;
+            border-radius: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .toggle button.active {
+            color: #08c17c;
+        }
+
+        .toggle .indicator {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            border-radius: 10px;
+            background: #fff;
+            transition: left 0.25s ease;
+        }
+
+        .chip-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chip {
+            flex: 1;
+            padding: 14px 12px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .chip.active {
+            border-color: #08c17c;
+            background: #dff5ed;
+            color: #08c17c;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            transition: opacity 0.2s ease;
+        }
+
+        .ghost {
+            background: #f1f2f6;
+            color: #111;
+        }
+
+        .fill {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .fill:disabled {
+            background: var(--disabled);
+        }
+
+        .status {
+            font-size: 13px;
+            color: #666;
+            min-height: 18px;
+        }
+
+        @media (max-width: 640px) {
+            .field {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .field label {
+                min-width: auto;
+            }
+
+            .consent-row {
+                flex-direction: column;
+            }
+
+            .consent-select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="card">
+            <h1>문의 폼 작성</h1>
+            <p class="subtitle">정보를 남겨주시면 상담 예약 단계로 안내해드려요.</p>
+
+            <div class="field">
+                <label for="storeName">매장명<span class="required">*</span></label>
+                <input id="storeName" name="storeName" type="text" placeholder="매장명(또는 예비창업자)" autocomplete="organization" />
+            </div>
+
+            <div class="field">
+                <label for="contact">연락처<span class="required">*</span></label>
+                <input id="contact" name="contact" type="tel" placeholder="010-" autocomplete="tel" />
+            </div>
+
+            <div class="field">
+                <label for="storeSize">매장규모<span class="required">*</span></label>
+                <div class="select-wrapper">
+                    <select id="storeSize" name="storeSize">
+                        <option value="">매장규모</option>
+                        <option value="1인 운영 매장 (사장님 단독 운영)">1인 운영 매장 (사장님 단독 운영)</option>
+                        <option value="2~3인 소규모 매장 (사장님 + 소수 직원)">2~3인 소규모 매장 (사장님 + 소수 직원)</option>
+                        <option value="4~9인 매장 (직원 포함 일반 규모 운영)">4~9인 매장 (직원 포함 일반 규모 운영)</option>
+                        <option value="10인 이상 운영 매장(다수 직원 근무)">10인 이상 운영 매장(다수 직원 근무)</option>
+                    </select>
+                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                        <path d="M1 1L6 6L11 1" stroke="#999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="consents">
+                <div class="consent-row">
+                    <div class="consent-label">필수</div>
+                    <div class="consent-body">
+                        <div>개인정보 수집 및 이용 동의</div>
+                        <div>개인정보 제3자 제공 동의</div>
+                    </div>
+                    <div class="select-wrapper consent-select">
+                        <select id="consent1" name="consent1">
+                            <option value="동의">동의</option>
+                            <option value="미동의">미동의</option>
+                        </select>
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                            <path d="M1 1L6 6L11 1" stroke="#999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="consent-row">
+                    <div class="consent-label">선택</div>
+                    <div class="consent-body">
+                        <div>
+                            <a id="consent3Link" href="https://paynstore-pos-guide.notion.site/21671291761480f38188d3918aed10d9" target="_blank" rel="noopener" style="color: inherit;">마케팅 정보 수신 동의</a>
+                        </div>
+                    </div>
+                    <div class="select-wrapper consent-select">
+                        <select id="consent3" name="consent3">
+                            <option value="동의">동의</option>
+                            <option value="미동의">미동의</option>
+                        </select>
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                            <path d="M1 1L6 6L11 1" stroke="#999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="goBooking" class="btn" disabled>문의하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bookingModal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="badge">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M16.5 5L7.25 14L3.5 10.2" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 style="margin: 0 0 6px; font-size: 20px;">상담이 접수됐어요</h2>
+                    <div style="color: var(--subtitle); font-size: 14px;">시간을 알려주시면 맞춰서 연락드릴게요.</div>
+                </div>
+            </div>
+
+            <div class="summary" id="summaryText"></div>
+
+            <div>
+                <div style="font-weight: 700; margin-bottom: 8px;">희망 날짜</div>
+                <div class="toggle">
+                    <div class="indicator" id="dayIndicator"></div>
+                    <button type="button" data-day="today" class="active" aria-pressed="true">오늘</button>
+                    <button type="button" data-day="tomorrow" aria-pressed="false">내일</button>
+                </div>
+            </div>
+
+            <div>
+                <div style="font-weight: 700; margin-bottom: 8px;">희망 시간 (중복 선택 가능)</div>
+                <div class="chip-group">
+                    <button type="button" class="chip" data-time="morning">오전</button>
+                    <button type="button" class="chip" data-time="afternoon">오후</button>
+                </div>
+                <div class="status" id="timeHint">오전/오후 중복 선택 가능</div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="ghost" id="closeModal">닫기</button>
+                <button type="button" class="fill" id="submitBooking" disabled>예약하기</button>
+            </div>
+
+            <div class="status" id="submitStatus"></div>
+        </div>
+    </div>
+
+    <script>
+        const googleSheetsUrl = "https://script.google.com/macros/s/AKfycbx9xvkqXA6W5cONYVJbhQL5eMZLMVa9MJiAt6GTScqjjv5fbcN-HsefxOLj0ZNmc-qYxw/exec";
+        const slackConfig = {
+            webhookUrl: "",
+            title: "*새로운 상담 예약*",
+        };
+
+        const state = {
+            utm: {
+                source: "",
+                medium: "",
+                campaign: "",
+                content: "",
+                term: "",
+            },
+            selectedDay: "today",
+            selectedTimes: new Set(),
+        };
+
+        const $ = (id) => document.getElementById(id);
+        const goBookingBtn = $("goBooking");
+        const bookingModal = $("bookingModal");
+        const summaryText = $("summaryText");
+        const submitBookingBtn = $("submitBooking");
+        const submitStatus = $("submitStatus");
+        const timeHint = $("timeHint");
+        const dayIndicator = $("dayIndicator");
+
+        const formControls = {
+            storeName: $("storeName"),
+            contact: $("contact"),
+            storeSize: $("storeSize"),
+            consent1: $("consent1"),
+            consent3: $("consent3"),
+        };
+
+        const setBookingEnabled = () => {
+            const enabled = state.selectedTimes.size > 0;
+            submitBookingBtn.disabled = !enabled;
+            timeHint.textContent = enabled ? "" : "시간을 1개 이상 선택해주세요.";
+        };
+
+        const setInquiryEnabled = () => {
+            const valid =
+                formControls.storeName.value.trim() &&
+                formControls.contact.value.trim() &&
+                formControls.storeSize.value.trim() &&
+                formControls.consent1.value.trim();
+            goBookingBtn.disabled = !valid;
+        };
+
+        const updateSummary = () => {
+            summaryText.innerHTML = `
+                <div><strong>매장명</strong> ${formControls.storeName.value || "-"}</div>
+                <div><strong>연락처</strong> ${formControls.contact.value || "-"}</div>
+                <div><strong>매장규모</strong> ${formControls.storeSize.value || "-"}</div>
+                <div><strong>필수 동의</strong> ${formControls.consent1.value}</div>
+                <div><strong>선택 동의</strong> ${formControls.consent3.value}</div>
+            `;
+        };
+
+        const openModal = () => {
+            updateSummary();
+            bookingModal.classList.add("active");
+            submitStatus.textContent = "";
+        };
+
+        const closeModal = () => {
+            bookingModal.classList.remove("active");
+            submitStatus.textContent = "";
+            submitBookingBtn.disabled = state.selectedTimes.size === 0;
+        };
+
+        const sendSlack = async (payload) => {
+            if (!slackConfig.webhookUrl) return;
+            const formFieldsText = Object.entries(payload)
+                .map(([k, v]) => `> *${k}*: ${v || "N/A"}`)
+                .join("\\n");
+            const body = {
+                blocks: [
+                    { type: "section", text: { type: "mrkdwn", text: slackConfig.title } },
+                    { type: "section", text: { type: "mrkdwn", text: formFieldsText } },
+                    {
+                        type: "context",
+                        elements: [
+                            {
+                                type: "mrkdwn",
+                                text: `제출 시간: ${new Date().toLocaleString("ko-KR")}`,
+                            },
+                        ],
+                    },
+                ],
+            };
+            try {
+                await fetch(slackConfig.webhookUrl, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+            } catch (err) {
+                console.error("Slack 전송 실패", err);
+            }
+        };
+
+        const handleSubmit = async () => {
+            if (!googleSheetsUrl) {
+                submitStatus.textContent = "구글 시트 URL이 설정되지 않았습니다.";
+                return;
+            }
+            if (state.selectedTimes.size === 0) return;
+
+            submitBookingBtn.disabled = true;
+            submitBookingBtn.textContent = "전송 중...";
+            submitStatus.textContent = "잠시만 기다려주세요.";
+
+            const timeSlots = Array.from(state.selectedTimes)
+                .map((t) => (t === "morning" ? "오전" : "오후"))
+                .join(", ");
+
+            const data = {
+                timestamp: new Date().toISOString(),
+                storeName: formControls.storeName.value.trim(),
+                contact: formControls.contact.value.trim(),
+                storeSize: formControls.storeSize.value.trim(),
+                consent1: formControls.consent1.value,
+                consent3: formControls.consent3.value,
+                day: state.selectedDay === "today" ? "오늘" : "내일",
+                timeSlots: timeSlots || "선택 안 함",
+                utmSource: state.utm.source,
+                utmMedium: state.utm.medium,
+                utmCampaign: state.utm.campaign,
+                utmContent: state.utm.content,
+                utmTerm: state.utm.term,
+            };
+
+            try {
+                await sendSlack(data);
+                await fetch(googleSheetsUrl, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                });
+                submitStatus.textContent = "완료! 2초 후 초기화됩니다.";
+                submitBookingBtn.textContent = "완료!";
+
+                setTimeout(() => {
+                    closeModal();
+                    submitBookingBtn.textContent = "예약하기";
+                    formControls.storeName.value = "";
+                    formControls.contact.value = "";
+                    formControls.storeSize.value = "";
+                    formControls.consent1.value = "동의";
+                    formControls.consent3.value = "동의";
+                    state.selectedTimes.clear();
+                    state.selectedDay = "today";
+                    document.querySelectorAll(".chip").forEach((chip) => chip.classList.remove("active"));
+                    document.querySelectorAll(".toggle button").forEach((btn, idx) => {
+                        btn.classList.toggle("active", idx === 0);
+                        btn.setAttribute("aria-pressed", idx === 0 ? "true" : "false");
+                    });
+                    dayIndicator.style.left = "4px";
+                    setBookingEnabled();
+                    setInquiryEnabled();
+                }, 2000);
+            } catch (err) {
+                console.error(err);
+                submitStatus.textContent = "전송 중 오류가 발생했습니다. 다시 시도해주세요.";
+                submitBookingBtn.textContent = "예약하기";
+                submitBookingBtn.disabled = false;
+            }
+        };
+
+        // Input listeners
+        Object.values(formControls).forEach((el) => {
+            el.addEventListener("input", setInquiryEnabled);
+            el.addEventListener("change", setInquiryEnabled);
+        });
+
+        goBookingBtn.addEventListener("click", () => {
+            if (goBookingBtn.disabled) return;
+            openModal();
+        });
+
+        $("closeModal").addEventListener("click", closeModal);
+
+        document.querySelectorAll(".toggle button").forEach((btn, idx) => {
+            btn.addEventListener("click", () => {
+                state.selectedDay = btn.dataset.day;
+                document.querySelectorAll(".toggle button").forEach((b) => {
+                    const active = b === btn;
+                    b.classList.toggle("active", active);
+                    b.setAttribute("aria-pressed", active ? "true" : "false");
+                });
+                dayIndicator.style.left = state.selectedDay === "today" ? "4px" : "calc(50% + 0px)";
+            });
+        });
+
+        document.querySelectorAll(".chip").forEach((chip) => {
+            chip.addEventListener("click", () => {
+                const key = chip.dataset.time;
+                if (state.selectedTimes.has(key)) {
+                    state.selectedTimes.delete(key);
+                    chip.classList.remove("active");
+                } else {
+                    state.selectedTimes.add(key);
+                    chip.classList.add("active");
+                }
+                setBookingEnabled();
+            });
+        });
+
+        submitBookingBtn.addEventListener("click", handleSubmit);
+
+        // UTM capture
+        const params = new URLSearchParams(window.location.search);
+        state.utm.source = params.get("utm_source") || "";
+        state.utm.medium = params.get("utm_medium") || "";
+        state.utm.campaign = params.get("utm_campaign") || "";
+        state.utm.content = params.get("utm_content") || "";
+        state.utm.term = params.get("utm_term") || "";
+
+        // Initialize
+        setInquiryEnabled();
+        setBookingEnabled();
+    </script>
+</body>
+</html>
